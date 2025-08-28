@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using User_and_Task_API.Data;
 using User_and_Task_API.Models;
+using User_and_Task_API.Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -17,7 +18,7 @@ namespace User_and_Task_API.Repositories
 
         public async Task<IEnumerable<User>> GetAllAsync() => await _context.Users.ToListAsync();
 
-        public async Task<User> GetByIdAsync(int id) => await _context.Users.FindAsync(id);
+        public async Task<User?> GetByIdAsync(int id) => await _context.Users.FindAsync(id);
 
         public async Task<User> AddAsync(User user)
         {

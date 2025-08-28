@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using User_and_Task_API.Models;
 using User_and_Task_API.Repositories;
 using System.Threading.Tasks;
+using User_and_Task_API.Repositories.Interfaces;
+
 
 namespace User_and_Task_API.Controllers
 {

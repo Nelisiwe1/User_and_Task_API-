@@ -3,6 +3,10 @@ using User_and_Task_API.Data;
 using User_and_Task_API.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
+using User_and_Task_API.Repositories.Interfaces; 
+
+
 
 namespace User_and_Task_API.Repositories
 {
@@ -43,6 +47,36 @@ namespace User_and_Task_API.Repositories
                 _context.Tasks.Remove(task);
                 await _context.SaveChangesAsync();
             }
+        }
+        
+        // ---------------- Filtering ----------------
+
+        public async Task<IEnumerable<UserTask>> GetExpiredTasksAsync()
+        {
+            return await _context.Tasks
+                .Where(t => t.DueDate < DateTime.Now)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<UserTask>> GetActiveTasksAsync()
+        {
+            return await _context.Tasks
+                .Where(t => t.DueDate >= DateTime.Now)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<UserTask>> GetTasksByDateAsync(DateTime date)
+        {
+            return await _context.Tasks
+                .Where(t => t.DueDate.Date == date.Date)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<UserTask>> GetTasksByAssigneeAsync(int userId)
+        {
+            return await _context.Tasks
+                .Where(t => t.Assignee == userId)
+                .ToListAsync();
         }
     }
 }
