@@ -11,5 +11,7 @@ namespace User_and_Task_API.Repositories.Interfaces
         Task<User> AddAsync(User user);
         Task<User> UpdateAsync(User user);
         Task DeleteAsync(int id);
+
+        Task<User?> GetByUsernameAsync(string username);
     }
 }

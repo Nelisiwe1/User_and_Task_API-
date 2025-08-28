@@ -10,13 +10,13 @@ namespace User_and_Task_API.Models
         public int ID { get; set; }
 
         [SwaggerSchema("Unique username of the user")]
-        public String UserName { get; set; }
+        public required String UserName { get; set; }
 
          [SwaggerSchema("User's email address")]
-        public String Email { get; set; }
+        public String? Email { get; set; }
 
         [SwaggerSchema("Password (should be hashed in real apps)")]
-        public String Password { get; set; }
+        public required String Password { get; set; }
 
     }
 }

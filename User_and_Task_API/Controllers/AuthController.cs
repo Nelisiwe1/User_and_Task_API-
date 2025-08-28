@@ -1,60 +1,69 @@
 using Microsoft.AspNetCore.Mvc;
+using User_and_Task_API.Models;
+using User_and_Task_API.Repositories.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using User_and_Task_API.Data;
-using User_and_Task_API.Models;
+using System.Security.Cryptography;
+ 
 
 namespace User_and_Task_API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IUserRepository _userRepo;
         private readonly IConfiguration _config;
 
-        public AuthController(AppDbContext context, IConfiguration config)
+        public AuthController(IUserRepository userRepo, IConfiguration config)
         {
-            _context = context;
+            _userRepo = userRepo;
             _config = config;
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login(LoginRequest request)
         {
-            var user = _context.Users.FirstOrDefault(u => 
-                u.Username == request.Username && u.Password == request.Password);
+            if (request == null) return BadRequest("Invalid login request");
 
-            if (user == null)
-                return Unauthorized("Invalid username or password");
+            var user = await _userRepo.GetByUsernameAsync(request.UserName);
+            if (user == null) return Unauthorized("Invalid username or password");
 
-            var token = GenerateJwtToken(user);
-            return Ok(new { Token = token });
-        }
+           
 
-        private string GenerateJwtToken(User user)
-        {
+// Hash input password
+using var sha256 = SHA256.Create();
+var hashedInput = sha256.ComputeHash(Encoding.UTF8.GetBytes(request.Password));
+
+// Convert stored password from Base64
+var storedPasswordBytes = Convert.FromBase64String(user.Password!);
+
+// Compare
+if (!hashedInput.SequenceEqual(storedPasswordBytes))
+    return Unauthorized("Invalid username or password");
+
+
+            // Generate JWT
             var jwtSettings = _config.GetSection("Jwt");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Username),
-                new Claim("userId", user.ID.ToString())
+                new Claim(ClaimTypes.Name, user.UserName!),
+                new Claim(ClaimTypes.NameIdentifier, user.ID.ToString())
             };
 
             var token = new JwtSecurityToken(
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(Convert.ToDouble(jwtSettings["ExpireMinutes"])),
-                signingCredentials: creds
+                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(jwtSettings["ExpireMinutes"])),
+                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return Ok(new { Token = new JwtSecurityTokenHandler().WriteToken(token) });
         }
     }
 }

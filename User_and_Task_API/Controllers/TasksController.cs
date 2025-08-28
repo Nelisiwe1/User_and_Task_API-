@@ -3,12 +3,13 @@ using User_and_Task_API.Models;
 using User_and_Task_API.Repositories.Interfaces;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace User_and_Task_API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-      [Authorize]
+    [Authorize]
     public class TasksController : ControllerBase
     {
         private readonly ITaskRepository _repo;
@@ -43,7 +44,7 @@ namespace User_and_Task_API.Controllers
                 return BadRequest("Task and title are required");
 
             var createdTask = await _repo.AddAsync(task);
-            return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.ID }, createdTask);
+            return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.Id }, createdTask);
         }
 
         // PUT: api/tasks/{id}
@@ -72,8 +73,6 @@ namespace User_and_Task_API.Controllers
             await _repo.DeleteAsync(id);
             return Ok("Task deleted");
         }
-
-        // Filtering endpoints
 
         // GET: api/tasks/expired
         [HttpGet("expired")]

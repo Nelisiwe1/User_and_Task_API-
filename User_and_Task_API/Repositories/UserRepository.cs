@@ -15,6 +15,11 @@ namespace User_and_Task_API.Repositories
         {
             _context = context;
         }
+        public async Task<User?> GetByUsernameAsync(string username)
+{
+    return await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+}
+
 
         public async Task<IEnumerable<User>> GetAllAsync() => await _context.Users.ToListAsync();
 

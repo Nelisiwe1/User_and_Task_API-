@@ -1,12 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using User_and_Task_API.Data;
 using User_and_Task_API.Models;
+using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
-using User_and_Task_API.Repositories.Interfaces; 
-
-
+using System.Threading.Tasks;
+using User_and_Task_API.Repositories.Interfaces;
 
 namespace User_and_Task_API.Repositories
 {
@@ -19,7 +18,7 @@ namespace User_and_Task_API.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<UserTask>> GetAllAsync() =>
+        public async Task<List<UserTask>> GetAllAsync() =>
             await _context.Tasks.ToListAsync();
 
         public async Task<UserTask?> GetByIdAsync(int id) =>
@@ -48,35 +47,27 @@ namespace User_and_Task_API.Repositories
                 await _context.SaveChangesAsync();
             }
         }
-        
+
         // ---------------- Filtering ----------------
 
-        public async Task<IEnumerable<UserTask>> GetExpiredTasksAsync()
-        {
-            return await _context.Tasks
-                .Where(t => t.DueDate < DateTime.Now)
+        public async Task<List<UserTask>> GetExpiredTasksAsync() =>
+            await _context.Tasks
+                .Where(t => t.DueDate < DateTime.UtcNow)
                 .ToListAsync();
-        }
 
-        public async Task<IEnumerable<UserTask>> GetActiveTasksAsync()
-        {
-            return await _context.Tasks
-                .Where(t => t.DueDate >= DateTime.Now)
+        public async Task<List<UserTask>> GetActiveTasksAsync() =>
+            await _context.Tasks
+                .Where(t => t.DueDate >= DateTime.UtcNow)
                 .ToListAsync();
-        }
 
-        public async Task<IEnumerable<UserTask>> GetTasksByDateAsync(DateTime date)
-        {
-            return await _context.Tasks
+        public async Task<List<UserTask>> GetTasksByDateAsync(DateTime date) =>
+            await _context.Tasks
                 .Where(t => t.DueDate.Date == date.Date)
                 .ToListAsync();
-        }
 
-        public async Task<IEnumerable<UserTask>> GetTasksByAssigneeAsync(int userId)
-        {
-            return await _context.Tasks
+        public async Task<List<UserTask>> GetTasksByAssigneeAsync(int userId) =>
+            await _context.Tasks
                 .Where(t => t.Assignee == userId)
                 .ToListAsync();
-        }
     }
 }

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Swashbuckle.AspNetCore.Annotations
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace User_and_Task_API.Models
 {
@@ -10,7 +10,7 @@ namespace User_and_Task_API.Models
         public int Id { get; set; }
         
         [SwaggerSchema("Title of the task")]
-        public string Title { get; set; }
+        public string? Title { get; set; }
 
         
         [SwaggerSchema("Optional description of the task")]
