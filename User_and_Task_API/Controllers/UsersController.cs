@@ -1,101 +1,67 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using User_and_Task_API.Data;
 using User_and_Task_API.Models;
+using User_and_Task_API.Repositories;
+using System.Threading.Tasks;
 
 namespace User_and_Task_API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly ApiContext _context;
-        private readonly ILogger<UsersController> _logger;
+        private readonly IUserRepository _repo;
 
-        public UsersController(ApiContext context, ILogger<UsersController> logger)
+        public UsersController(IUserRepository repo)
         {
-            _context = context;
-            _logger = logger;
+            _repo = repo;
         }
 
         // GET: api/users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<IActionResult> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            var users = await _repo.GetAllAsync();
+            return Ok(users);
         }
 
-        // GET: api/users/5
+        // GET: api/users/1
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        public async Task<IActionResult> GetUser(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                _logger.LogWarning("GetUser failed: User {UserId} not found", id);
-                return NotFound();
-            }
-
-            return user;
+            var user = await _repo.GetByIdAsync(id);
+            if (user == null) return NotFound();
+            return Ok(user);
         }
 
         // POST: api/users
         [HttpPost]
-        public async Task<ActionResult<User>> CreateUser([FromBody] User user)
+        public async Task<IActionResult> CreateUser(User user)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("User {UserId} created successfully", user.ID);
-            return CreatedAtAction(nameof(GetUser), new { id = user.ID }, user);
+            var createdUser = await _repo.AddAsync(user);
+            return Ok(createdUser);
         }
 
-        // PUT: api/users/5
+        // PUT: api/users/1
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] User user)
+        public async Task<IActionResult> UpdateUser(int id, User updatedUser)
         {
-            if (id != user.ID)
-                return BadRequest("User ID mismatch");
+            var user = await _repo.GetByIdAsync(id);
+            if (user == null) return NotFound();
 
-            _context.Entry(user).State = EntityState.Modified;
+            user.UserName = updatedUser.UserName;
+            user.Email = updatedUser.Email;
+            user.Password = updatedUser.Password;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-                _logger.LogInformation("User {UserId} updated successfully", user.ID);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Users.Any(u => u.ID == id))
-                {
-                    _logger.LogWarning("Update failed: User {UserId} not found", id);
-                    return NotFound();
-                }
-                throw;
-            }
-
-            return NoContent();
+            var result = await _repo.UpdateAsync(user);
+            return Ok(result);
         }
 
-        // DELETE: api/users/5
+        // DELETE: api/users/1
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                _logger.LogWarning("Delete failed: User {UserId} not found", id);
-                return NotFound();
-            }
-
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("User {UserId} deleted successfully", id);
-            return NoContent();
+            await _repo.DeleteAsync(id);
+            return Ok();
         }
     }
 }

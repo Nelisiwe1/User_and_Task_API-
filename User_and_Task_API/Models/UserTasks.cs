@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace User_and_Task_API.Models
 {
-    public class Task
+    public class UserTask
     {
-        public int ID { get; set; }
+        public int Id { get; set; }
         public string Title { get; set; }
         public string? Description { get; set; }
         public DateTime DueDate { get; set; }

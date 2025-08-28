@@ -8,6 +8,6 @@ namespace User_and_Task_API.Data
         public ApiContext(DbContextOptions<ApiContext> options) : base(options) { }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Task> Tasks { get; set; }
+        public DbSet<UserTask> Tasks { get; set; }
     }
 }

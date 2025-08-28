@@ -6,9 +6,9 @@ namespace User_and_Task_API.Models
     {
 
         public int ID { get; set; }
-        public string UserName { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
+        public String UserName { get; set; }
+        public String Email { get; set; }
+        public String Password { get; set; }
 
     }
 }
